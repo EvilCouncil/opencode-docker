@@ -22,15 +22,15 @@ FROM base
 
 COPY --from=npm-builder /npm-global /npm-global
 ENV PATH="/npm-global/bin:$PATH"
-ENV UI_PASSWORD=password
-RUN mkdir -p /home/opencode/.config/opencode /home/opencode/.config/openchamber && \
-    chown -R opencode:opencode /home/opencode
-
-RUN mkdir -p /workspace && chown opencode:opencode /workspace
+# UI_PASSWORD must be supplied at runtime via -e UI_PASSWORD=... or docker-compose environment:
+RUN mkdir -p /home/opencode/.config/opencode \
+             /home/opencode/.config/openchamber \
+             /workspace && \
+    chown -R opencode:opencode /home/opencode /workspace
 
 USER opencode
 WORKDIR /workspace
 
 EXPOSE 4096
 
-CMD openchamber --lan --port 4096 --ui-password "${UI_PASSWORD}" --no-daemon
+CMD exec openchamber --lan --port 4096 --ui-password "${UI_PASSWORD:-password}" --no-daemon
