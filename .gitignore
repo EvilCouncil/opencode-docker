@@ -1,3 +1,22 @@
+# macOS
 .DS_Store
+
+# Editor swap files
 *.swp
 *.swo
+
+# Node.js
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Docker
+.docker/
