@@ -1,0 +1,39 @@
+# TODO: scheduled version-check workflow
+#
+# Add a workflow here that runs update_versions.py on a schedule and opens a PR
+# when new package versions are found. Rough shape:
+#
+# name: Check for opencode updates
+#
+# on:
+#   schedule:
+#     - cron: '0 8 * * 1'  # every Monday at 08:00 UTC
+#   workflow_dispatch:
+#
+# permissions:
+#   contents: write
+#   pull-requests: write
+#
+# jobs:
+#   update:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+#
+#       - name: Run version updater
+#         id: update
+#         run: |
+#           python3 update_versions.py
+#           echo "changed=$(git diff --quiet && echo false || echo true)" >> $GITHUB_OUTPUT
+#
+#       - name: Open PR if versions changed
+#         if: steps.update.outputs.changed == 'true'
+#         uses: peter-evans/create-pull-request@v7
+#         with:
+#           commit-message: "chore: bump opencode-ai and @openchamber/web to latest"
+#           title: "chore: bump opencode package versions"
+#           branch: "auto/bump-opencode-versions"
+#           delete-branch: true
+#
+# Requires: peter-evans/create-pull-request action (or replace with gh pr create via CLI).
+# After merging the PR, manually push a vX.Y.Z tag to trigger build.yml.

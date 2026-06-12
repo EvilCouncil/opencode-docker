@@ -11,11 +11,14 @@ RUN apt-get update && \
 # Stage 2: install npm packages into an isolated prefix
 FROM base AS npm-builder
 
+ARG OPENCODE_VERSION=1.17.4
+ARG OPENCHAMBER_VERSION=1.12.4
+
 RUN npm install -g --prefix /npm-global \
-    opencode-ai \
+    opencode-ai@${OPENCODE_VERSION} \
     pyright \
     @modelcontextprotocol/server-filesystem \
-    @openchamber/web
+    @openchamber/web@${OPENCHAMBER_VERSION}
 
 # Stage 3: runtime image
 FROM base
