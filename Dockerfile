@@ -2,7 +2,7 @@
 FROM node:20-slim AS base
 
 RUN apt-get update && \
-    apt-get install -y bash git ripgrep curl python3 python3-pip python3-venv && \
+    apt-get install -y bash git ripgrep curl python3 python3-pip python3-venv gh && \
     ln -sf /usr/bin/python3 /usr/bin/python && \
     rm -rf /var/lib/apt/lists/* && \
     usermod -l opencode -d /home/opencode -m node && \
