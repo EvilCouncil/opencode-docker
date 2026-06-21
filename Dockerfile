@@ -11,8 +11,8 @@ RUN apt-get update && \
 # Stage 2: install npm packages into an isolated prefix
 FROM base AS npm-builder
 
-ARG OPENCODE_VERSION=1.17.4
-ARG OPENCHAMBER_VERSION=1.12.4
+ARG OPENCODE_VERSION=1.17.9
+ARG OPENCHAMBER_VERSION=1.13.2
 
 RUN npm install -g --prefix /npm-global \
     opencode-ai@${OPENCODE_VERSION} \
