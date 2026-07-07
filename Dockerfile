@@ -13,12 +13,14 @@ FROM base AS npm-builder
 
 ARG OPENCODE_VERSION=1.17.9
 ARG OPENCHAMBER_VERSION=1.13.2
+ARG OPENCODE_ORCHESTRATOR_VERSION=1.7.6
 
 RUN npm install -g --prefix /npm-global \
     opencode-ai@${OPENCODE_VERSION} \
     pyright \
     @modelcontextprotocol/server-filesystem \
-    @openchamber/web@${OPENCHAMBER_VERSION}
+    @openchamber/web@${OPENCHAMBER_VERSION} \
+    opencode-orchestrator@${OPENCODE_ORCHESTRATOR_VERSION}
 
 # Stage 3: runtime image
 FROM base
