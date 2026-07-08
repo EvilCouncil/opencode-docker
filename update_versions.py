@@ -23,13 +23,12 @@ def get_latest_version(package: str) -> str:
 
 def main() -> int:
     content = DOCKERFILE.read_text()
-    current_opencode = VERSION_FILE.read_text().strip()
 
     opencode_arg = re.search(r"ARG OPENCODE_VERSION=(\S+)", content)
     openchamber_arg = re.search(r"ARG OPENCHAMBER_VERSION=(\S+)", content)
 
     current = {
-        "opencode-ai": current_opencode,
+        "opencode-ai": opencode_arg.group(1) if opencode_arg else None,
         "@openchamber/web": openchamber_arg.group(1) if openchamber_arg else None,
     }
 

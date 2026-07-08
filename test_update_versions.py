@@ -181,3 +181,59 @@ class TestMainBothUpdated:
     def test_returns_zero(self, repo, monkeypatch):
         mock_latest(monkeypatch, opencode="1.18.0", openchamber="1.13.0")
         assert update_versions.main() == 0
+
+
+# ---------------------------------------------------------------------------
+# main() – VERSION file out of sync with Dockerfile (rollback scenario)
+# ---------------------------------------------------------------------------
+
+
+class TestMainVersionFileMismatch:
+    """Guards against the bug where VERSION diverges from the Dockerfile ARG.
+
+    If someone rolls back the Dockerfile ARG (e.g. to 1.15.12) without also
+    updating VERSION (still 1.17.9), the script must treat the Dockerfile ARG
+    as the source of truth and correctly detect that a newer npm version exists
+    relative to what the Dockerfile declares.
+    """
+
+    def test_dockerfile_arg_is_source_of_truth(self, repo, monkeypatch):
+        # Simulate rollback: Dockerfile pinned to 1.15.12 but VERSION still says 1.17.9
+        repo["dockerfile"].write_text(
+            DOCKERFILE_CONTENT.replace("ARG OPENCODE_VERSION=1.17.4", "ARG OPENCODE_VERSION=1.15.12")
+        )
+        repo["version_file"].write_text("1.17.9\n")
+
+        # npm latest is 1.17.9 — newer than the Dockerfile's pinned 1.15.12
+        mock_latest(monkeypatch, opencode="1.17.9")
+        update_versions.main()
+
+        # Dockerfile should be updated to the npm latest
+        assert "ARG OPENCODE_VERSION=1.17.9" in repo["dockerfile"].read_text()
+
+    def test_version_file_synced_from_dockerfile(self, repo, monkeypatch):
+        # Simulate rollback: Dockerfile pinned to 1.15.12 but VERSION still says 1.17.9
+        repo["dockerfile"].write_text(
+            DOCKERFILE_CONTENT.replace("ARG OPENCODE_VERSION=1.17.4", "ARG OPENCODE_VERSION=1.15.12")
+        )
+        repo["version_file"].write_text("1.17.9\n")
+
+        mock_latest(monkeypatch, opencode="1.17.9")
+        update_versions.main()
+
+        # VERSION file should now reflect npm latest, not the stale 1.17.9 from before
+        assert repo["version_file"].read_text() == "1.17.9\n"
+
+    def test_no_update_when_dockerfile_matches_npm(self, repo, monkeypatch):
+        # Dockerfile and npm both at 1.15.12; VERSION file is stale but irrelevant
+        repo["dockerfile"].write_text(
+            DOCKERFILE_CONTENT.replace("ARG OPENCODE_VERSION=1.17.4", "ARG OPENCODE_VERSION=1.15.12")
+        )
+        repo["version_file"].write_text("1.17.9\n")
+
+        mock_latest(monkeypatch, opencode="1.15.12")
+        result = update_versions.main()
+
+        # Nothing to update — Dockerfile already matches npm
+        assert result == 0
+        assert "ARG OPENCODE_VERSION=1.15.12" in repo["dockerfile"].read_text()
