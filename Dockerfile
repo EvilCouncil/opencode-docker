@@ -11,7 +11,8 @@ RUN apt-get update && \
 # Stage 2: install npm packages into an isolated prefix
 FROM base AS npm-builder
 
-ARG OPENCODE_VERSION=1.17.15
+# rolling back the opencode version so local MCP servers work
+ARG OPENCODE_VERSION=1.15.12
 ARG OPENCHAMBER_VERSION=1.14.1
 ARG OPENCODE_ORCHESTRATOR_VERSION=1.7.6
 
