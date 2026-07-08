@@ -23,6 +23,9 @@ RUN npm install -g --prefix /npm-global \
     @openchamber/web@${OPENCHAMBER_VERSION} \
     opencode-orchestrator@${OPENCODE_ORCHESTRATOR_VERSION}
 
+# Fail fast if a wrong opencode version ends up installed
+RUN test "$(/npm-global/bin/opencode --version)" = "${OPENCODE_VERSION}"
+
 # Stage 3: runtime image
 FROM base
 
