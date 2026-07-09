@@ -2,13 +2,24 @@
 FROM node:20-slim AS base
 
 RUN apt-get update && \
-    apt-get install -y bash git ripgrep curl python3 python3-pip python3-venv gh golang-go && \
+    apt-get install -y bash git ripgrep curl python3 python3-pip python3-venv gh && \
     ln -sf /usr/bin/python3 /usr/bin/python && \
     rm -rf /var/lib/apt/lists/* && \
     usermod -l opencode -d /home/opencode -m node && \
     groupmod -n opencode node
 
-# Stage 2: install npm packages into an isolated prefix
+# Stage 2: install the official Go toolchain (apt's golang-go is too old)
+FROM base AS go-installer
+
+ARG GO_VERSION=1.26.5
+ARG GO_SHA256=5c2c3b16caefa1d968a94c1daca04a7ca301a496d9b086e17ad77bb81393f053
+
+RUN curl -fsSL -o /tmp/go.tar.gz "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" && \
+    echo "${GO_SHA256}  /tmp/go.tar.gz" | sha256sum -c - && \
+    tar -C /usr/local -xzf /tmp/go.tar.gz && \
+    rm /tmp/go.tar.gz
+
+# Stage 3: install npm packages into an isolated prefix
 FROM base AS npm-builder
 
 # rolling back the opencode version so local MCP servers work
@@ -26,11 +37,12 @@ RUN npm install -g --prefix /npm-global \
 # Fail fast if a wrong opencode version ends up installed
 RUN test "$(/npm-global/bin/opencode --version)" = "${OPENCODE_VERSION}"
 
-# Stage 3: runtime image
+# Stage 4: runtime image
 FROM base
 
 COPY --from=npm-builder /npm-global /npm-global
-ENV PATH="/npm-global/bin:$PATH"
+COPY --from=go-installer /usr/local/go /usr/local/go
+ENV PATH="/usr/local/go/bin:/npm-global/bin:$PATH"
 # UI_PASSWORD must be supplied at runtime via -e UI_PASSWORD=... or docker-compose environment:
 RUN mkdir -p /home/opencode/.config/opencode \
              /home/opencode/.config/openchamber \
