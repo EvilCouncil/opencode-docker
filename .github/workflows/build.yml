@@ -16,9 +16,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Read VERSION
+      - name: Read OPENCODE_VERSION from Dockerfile
         id: version
-        run: echo "opencode_version=$(cat VERSION)" >> $GITHUB_OUTPUT
+        run: echo "opencode_version=$(grep -oP 'ARG OPENCODE_VERSION=\K\S+' Dockerfile)" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
