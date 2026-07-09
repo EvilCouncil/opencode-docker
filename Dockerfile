@@ -2,7 +2,7 @@
 FROM node:20-slim AS base
 
 RUN apt-get update && \
-    apt-get install -y bash git ripgrep curl python3 python3-pip python3-venv gh && \
+    apt-get install -y bash git ripgrep curl python3 python3-pip python3-venv gh golang-go && \
     ln -sf /usr/bin/python3 /usr/bin/python && \
     rm -rf /var/lib/apt/lists/* && \
     usermod -l opencode -d /home/opencode -m node && \
@@ -12,7 +12,7 @@ RUN apt-get update && \
 FROM base AS npm-builder
 
 # rolling back the opencode version so local MCP servers work
-ARG OPENCODE_VERSION=1.15.12
+ARG OPENCODE_VERSION=1.17.18
 ARG OPENCHAMBER_VERSION=1.14.1
 ARG OPENCODE_ORCHESTRATOR_VERSION=1.7.6
 
