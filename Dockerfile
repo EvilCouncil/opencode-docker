@@ -24,7 +24,7 @@ FROM base AS npm-builder
 
 # rolling back the opencode version so local MCP servers work
 ARG OPENCODE_VERSION=1.17.18
-ARG OPENCHAMBER_VERSION=1.14.1
+ARG OPENCHAMBER_VERSION=1.15.0
 ARG OPENCODE_ORCHESTRATOR_VERSION=1.7.6
 
 RUN npm install -g --prefix /npm-global \
