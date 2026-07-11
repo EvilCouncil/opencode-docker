@@ -11,6 +11,7 @@ A container image bundling [`opencode-ai`](https://www.npmjs.com/package/opencod
 - 🌐 `@openchamber/web` — web UI for opencode (served on port `4096`)
 - 🔍 `pyright` — Python type checking for MCP/tooling support
 - 📁 `@modelcontextprotocol/server-filesystem` — filesystem MCP server
+- 🔎 `mcp-ripgrep` — ripgrep MCP server
 - 🛠️ Dev tools: `bash`, `git`, `ripgrep`, `curl`, `python3`
 
 The image runs as a non-root `opencode` user and exposes a `/workspace` directory as the working directory.

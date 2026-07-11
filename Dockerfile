@@ -25,14 +25,13 @@ FROM base AS npm-builder
 # rolling back the opencode version so local MCP servers work
 ARG OPENCODE_VERSION=1.17.18
 ARG OPENCHAMBER_VERSION=1.15.0
-ARG OPENCODE_ORCHESTRATOR_VERSION=1.7.6
 
 RUN npm install -g --prefix /npm-global \
     opencode-ai@${OPENCODE_VERSION} \
     pyright \
     @modelcontextprotocol/server-filesystem \
-    @openchamber/web@${OPENCHAMBER_VERSION} \
-    opencode-orchestrator@${OPENCODE_ORCHESTRATOR_VERSION}
+    mcp-ripgrep \
+    @openchamber/web@${OPENCHAMBER_VERSION}
 
 # Fail fast if a wrong opencode version ends up installed
 RUN test "$(/npm-global/bin/opencode --version)" = "${OPENCODE_VERSION}"
