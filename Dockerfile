@@ -22,8 +22,7 @@ RUN curl -fsSL -o /tmp/go.tar.gz "https://go.dev/dl/go${GO_VERSION}.linux-amd64.
 # Stage 3: install npm packages into an isolated prefix
 FROM base AS npm-builder
 
-# rolling back the opencode version so local MCP servers work
-ARG OPENCODE_VERSION=1.17.18
+ARG OPENCODE_VERSION=1.17.19
 ARG OPENCHAMBER_VERSION=1.15.0
 
 RUN npm install -g --prefix /npm-global \
