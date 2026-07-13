@@ -29,8 +29,9 @@ jobs:
         id: existing
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WF_NAME: ${{ github.event.workflow_run.name }}
         run: |
-          TITLE="CI failure: ${{ github.event.workflow_run.name }}"
+          TITLE="CI failure: $WF_NAME"
           COUNT=$(gh issue list --repo ${{ github.repository }} \
             --label ci-failure --state open \
             --search "\"$TITLE\" in:title" --json number --jq 'length')
@@ -40,10 +41,13 @@ jobs:
         if: steps.existing.outputs.count == '0'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WF_NAME: ${{ github.event.workflow_run.name }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
         run: |
           gh issue create --repo ${{ github.repository }} \
-            --title "CI failure: ${{ github.event.workflow_run.name }}" \
+            --title "CI failure: $WF_NAME" \
             --label ci-failure \
-            --body "The **${{ github.event.workflow_run.name }}** workflow failed on \`${{ github.event.workflow_run.head_branch }}\`.
+            --body "The **$WF_NAME** workflow failed on \`$HEAD_BRANCH\`.
 
-          Run: ${{ github.event.workflow_run.html_url }}"
+          Run: $RUN_URL"
