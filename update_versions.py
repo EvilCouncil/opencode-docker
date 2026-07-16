@@ -11,7 +11,7 @@ REPO_ROOT = Path(__file__).parent
 DOCKERFILE = REPO_ROOT / "Dockerfile"
 VERSION_FILE = REPO_ROOT / "VERSION"
 
-PINNED_PACKAGES = ["opencode-ai", "@openchamber/web"]
+PINNED_PACKAGES = ["opencode-ai", "@openchamber/web", "@earendil-works/pi-coding-agent", "pi-subagents", "@firstpick/pi-package-webui"]
 
 
 def get_latest_version(package: str) -> str:
@@ -26,10 +26,16 @@ def main() -> int:
 
     opencode_arg = re.search(r"ARG OPENCODE_VERSION=(\S+)", content)
     openchamber_arg = re.search(r"ARG OPENCHAMBER_VERSION=(\S+)", content)
+    pi_arg = re.search(r"ARG PI_CODING_AGENT_VERSION=(\S+)", content)
+    pi_subagents_arg = re.search(r"ARG PI_SUBAGENTS_VERSION=(\S+)", content)
+    pi_webui_arg = re.search(r"ARG PI_WEBUI_VERSION=(\S+)", content)
 
     current = {
         "opencode-ai": opencode_arg.group(1) if opencode_arg else None,
         "@openchamber/web": openchamber_arg.group(1) if openchamber_arg else None,
+        "@earendil-works/pi-coding-agent": pi_arg.group(1) if pi_arg else None,
+        "pi-subagents": pi_subagents_arg.group(1) if pi_subagents_arg else None,
+        "@firstpick/pi-package-webui": pi_webui_arg.group(1) if pi_webui_arg else None,
     }
 
     print("Checking npm for latest versions...")
@@ -62,6 +68,21 @@ def main() -> int:
     content = re.sub(
         r"ARG OPENCHAMBER_VERSION=\S+",
         f"ARG OPENCHAMBER_VERSION={latest['@openchamber/web']}",
+        content,
+    )
+    content = re.sub(
+        r"ARG PI_CODING_AGENT_VERSION=\S+",
+        f"ARG PI_CODING_AGENT_VERSION={latest['@earendil-works/pi-coding-agent']}",
+        content,
+    )
+    content = re.sub(
+        r"ARG PI_SUBAGENTS_VERSION=\S+",
+        f"ARG PI_SUBAGENTS_VERSION={latest['pi-subagents']}",
+        content,
+    )
+    content = re.sub(
+        r"ARG PI_WEBUI_VERSION=\S+",
+        f"ARG PI_WEBUI_VERSION={latest['@firstpick/pi-package-webui']}",
         content,
     )
     DOCKERFILE.write_text(content)

@@ -10,10 +10,16 @@ FROM base AS npm-builder
 
 ARG OPENCODE_VERSION=1.17.4
 ARG OPENCHAMBER_VERSION=1.12.4
+ARG PI_CODING_AGENT_VERSION=0.50.0
+ARG PI_SUBAGENTS_VERSION=0.20.0
+ARG PI_WEBUI_VERSION=0.5.0
 
 RUN npm install -g --prefix /npm-global \\
     opencode-ai@${OPENCODE_VERSION} \\
-    @openchamber/web@${OPENCHAMBER_VERSION}
+    @openchamber/web@${OPENCHAMBER_VERSION} \\
+    @earendil-works/pi-coding-agent@${PI_CODING_AGENT_VERSION} \\
+    pi-subagents@${PI_SUBAGENTS_VERSION} \\
+    @firstpick/pi-package-webui@${PI_WEBUI_VERSION}
 """
 
 
@@ -79,8 +85,8 @@ def repo(tmp_path, monkeypatch):
     return {"dockerfile": dockerfile, "version_file": version_file}
 
 
-def mock_latest(monkeypatch, opencode="1.17.4", openchamber="1.12.4"):
-    versions = {"opencode-ai": opencode, "@openchamber/web": openchamber}
+def mock_latest(monkeypatch, opencode="1.17.4", openchamber="1.12.4", pi="0.50.0", subagents="0.20.0", webui="0.5.0"):
+    versions = {"opencode-ai": opencode, "@openchamber/web": openchamber, "@earendil-works/pi-coding-agent": pi, "pi-subagents": subagents, "@firstpick/pi-package-webui": webui}
     monkeypatch.setattr(
         update_versions, "get_latest_version", lambda pkg: versions[pkg]
     )
