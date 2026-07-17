@@ -2,7 +2,7 @@
 FROM node:22-slim AS base
 
 RUN apt-get update && \
-    apt-get install -y bash git ripgrep curl python3 python3-pip python3-venv gh && \
+    apt-get install -y bash git ripgrep curl python3 python3-pip python3-venv gh tmux && \
     ln -sf /usr/bin/python3 /usr/bin/python && \
     rm -rf /var/lib/apt/lists/* && \
     usermod -l opencode -d /home/opencode -m node && \
@@ -29,7 +29,7 @@ ARG PI_SUBAGENTS_VERSION=0.34.0
 ARG PI_WEBUI_VERSION=0.6.7
 
 RUN npm install -g --prefix /npm-global \
-    opencode-ai@${OPENCODE_VERSION} \
+    opencode-ai@1.18.3 \
     pyright \
     @modelcontextprotocol/server-filesystem \
     mcp-ripgrep \
