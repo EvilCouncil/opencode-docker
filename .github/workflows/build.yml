@@ -51,11 +51,29 @@ jobs:
             OPENCODE_VERSION=${{ steps.version.outputs.opencode_version }}
 
       - name: Create GitHub Release
+        id: release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release view "${{ github.ref_name }}" > /dev/null 2>&1 || \
+          # Generate release notes with image reference
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+          if [ -n "$PREV_TAG" ]; then
+            CHANGELOG=$(git log "${PREV_TAG}..HEAD" --pretty=format:"* %s (%h)" --no-merges)
+          else
+            CHANGELOG=$(git log --pretty=format:"* %s (%h)" --no-merges -20)
+          fi
+          
+          cat > /tmp/release-notes.md << HEREDOC
+          **Pull image:** \`docker pull ghcr.io/evilcouncil/opencode-docker:${{ github.ref_name }}\`
+          **OPENCODE_VERSION:** \${{ steps.version.outputs.opencode_version }}
+          
+          ## Changelog
+          
+          ${CHANGELOG}
+          
+          HEREDOC
+          
           gh release create "${{ github.ref_name }}" \
             --title "Release ${{ github.ref_name }}" \
-            --generate-notes \
+            --notes-file /tmp/release-notes.md \
             --verify-tag
