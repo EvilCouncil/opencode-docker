@@ -22,11 +22,11 @@ RUN curl -fsSL -o /tmp/go.tar.gz "https://go.dev/dl/go${GO_VERSION}.linux-amd64.
 # Stage 3: install npm packages into an isolated prefix
 FROM base AS npm-builder
 
-ARG OPENCODE_VERSION=1.18.21
-ARG OPENCHAMBER_VERSION=1.20.0
-ARG PI_CODING_AGENT_VERSION=0.84.2
-ARG PI_SUBAGENTS_VERSION=0.55.0
-ARG PI_WEBUI_VERSION=0.9.7
+ARG OPENCODE_VERSION=1.18.25
+ARG OPENCHAMBER_VERSION=1.21.0
+ARG PI_CODING_AGENT_VERSION=0.84.4
+ARG PI_SUBAGENTS_VERSION=0.59.0
+ARG PI_WEBUI_VERSION=0.10.0
 
 RUN npm install -g --prefix /npm-global \
     opencode-ai@${OPENCODE_VERSION} \
