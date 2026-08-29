@@ -33,10 +33,14 @@ test: ## 🧪 Run the version-bump script's unit tests
 	pytest test_update_versions.py
 
 .PHONY: update-versions
-update-versions: ## ⬆️  Check npm for newer opencode-ai / @openchamber/web and update Dockerfile + VERSION
+update-versions: ## ⬆️  Check npm for newer packages → rewrite Dockerfile + VERSION
 	python3 update_versions.py
 
 .PHONY: clean
 clean: ## 🧹 Remove local image and Python cache
 	docker rmi $(IMAGE):$(TAG) 2>/dev/null || true
 	rm -rf __pycache__ .pytest_cache
+
+.PHONY: check-build
+check-build: ## 🔍 Check GHCR tag + CI build status (TAG=v1.18.25 to check a specific tag)
+	python3 check_build.py $(if $(filter-out local,$(TAG)),$(TAG))
