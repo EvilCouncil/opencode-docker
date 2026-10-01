@@ -45,7 +45,8 @@ RUN mkdir -p /npm-global/bin && \
     mv /tmp/opencode /npm-global/bin/opencode && \
     chmod 755 /npm-global/bin/opencode && \
     rm -rf /tmp/opencode /tmp/opencode.tar.gz && \
-    echo "opencode v${OPENCODE_VERSION} installed: $(/npm-global/bin/opencode --version)"
+    echo "opencode v${OPENCODE_VERSION} installed: $(/npm-global/bin/opencode --version)" && \
+    test "$(/npm-global/bin/opencode --version)" = "opencode v${OPENCODE_VERSION}"
 
 # Stage 4: runtime image
 FROM base
