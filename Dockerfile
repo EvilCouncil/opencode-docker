@@ -29,7 +29,6 @@ ARG PI_SUBAGENTS_VERSION=0.74.0
 ARG PI_WEBUI_VERSION=0.10.9
 
 RUN npm install -g --prefix /npm-global \
-    @opencode/cli@${OPENCODE_VERSION} \
     @openchamber/web@${OPENCHAMBER_VERSION} \
     @earendil-works/pi-coding-agent@${PI_CODING_AGENT_VERSION} \
     pi-subagents@${PI_SUBAGENTS_VERSION} \
@@ -37,6 +36,15 @@ RUN npm install -g --prefix /npm-global \
     pyright \
     @modelcontextprotocol/server-filesystem \
     mcp-ripgrep
+
+# Install opencode v2 binary directly (meta-package postinstall unreliable in Docker)
+RUN mkdir -p /npm-global/bin && \
+    curl -fsSL "https://registry.npmjs.org/@opencode/cli-linux-x64/-/cli-linux-x64-${OPENCODE_VERSION}.tgz" \
+    -o /tmp/opencode.tgz && \
+    tar -xzf /tmp/opencode.tgz -C /tmp && \
+    mv /tmp/package/bin/opencode /npm-global/bin/opencode && \
+    chmod 755 /npm-global/bin/opencode && \
+    rm -rf /tmp/package /tmp/opencode.tgz
 
 # Fail fast if a wrong opencode version ends up installed
 RUN test "$(/npm-global/bin/opencode --version)" = "${OPENCODE_VERSION}"
