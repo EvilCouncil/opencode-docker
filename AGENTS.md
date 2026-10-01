@@ -7,7 +7,7 @@
 | File | Purpose |
 |------|---------|
 | `Dockerfile` | 4-stage build: OS deps → Go toolchain → npm install → runtime |
-| `VERSION` | Pinned `opencode-ai` version (mirrors `OPENCODE_VERSION` ARG) |
+| `VERSION` | Pinned `@opencode/cli` version (mirrors `OPENCODE_VERSION` ARG) |
 | `update_versions.py` | Checks npm for newer packages, rewrites `Dockerfile` + `VERSION` |
 | `check_build.py` | Verify build status (GHCR tag + CI run for any tag) |
 | `test_update_versions.py` | Unit tests for `update_versions.py` |
@@ -51,6 +51,7 @@ git tag v1.18.25 && git push origin v1.18.25
 
 - **Base image is `node:22-slim`** — required by `@earendil-works/pi-coding-agent` (needs `node >= 22.19.0`). Do not change to `node:20`.
 - **Fail-fast check**: Dockerfile asserts `/npm-global/bin/opencode --version` matches `OPENCODE_VERSION` immediately after install. Keep this if the install method changes. The ARG default must match the version in the install command.
+- **v2 uses `@opencode/cli`** (npm meta-package with postinstall) — not `opencode-ai`. The meta-package installs the correct native binary for the platform.
 - **MCP servers** (`@modelcontextprotocol/server-filesystem`, `mcp-ripgrep`) are installed as global npm packages in the `npm-builder` stage — add new ones there, not in the runtime stage.
 - **`gh` CLI** is pre-installed in the image (via apt in stage 1) — use it for git operations inside the container.
 - **`@openchamber/web`** is launched via the `openchamber` binary, not `opencode`. The CMD is `openchamber --lan --port 4096 --ui-password "${UI_PASSWORD:-password}" --no-daemon`.

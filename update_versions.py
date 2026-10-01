@@ -11,7 +11,7 @@ REPO_ROOT = Path(__file__).parent
 DOCKERFILE = REPO_ROOT / "Dockerfile"
 VERSION_FILE = REPO_ROOT / "VERSION"
 
-PINNED_PACKAGES = ["opencode-ai", "@openchamber/web", "@earendil-works/pi-coding-agent", "pi-subagents", "@firstpick/pi-package-webui"]
+PINNED_PACKAGES = ["@opencode/cli", "@openchamber/web", "@earendil-works/pi-coding-agent", "pi-subagents", "@firstpick/pi-package-webui"]
 
 
 def get_latest_version(package: str) -> str:
@@ -31,7 +31,7 @@ def main() -> int:
     pi_webui_arg = re.search(r"ARG PI_WEBUI_VERSION=(\S+)", content)
 
     current = {
-        "opencode-ai": opencode_arg.group(1) if opencode_arg else None,
+        "@opencode/cli": opencode_arg.group(1) if opencode_arg else None,
         "@openchamber/web": openchamber_arg.group(1) if openchamber_arg else None,
         "@earendil-works/pi-coding-agent": pi_arg.group(1) if pi_arg else None,
         "pi-subagents": pi_subagents_arg.group(1) if pi_subagents_arg else None,
@@ -56,13 +56,13 @@ def main() -> int:
         return 0
 
     # Update VERSION file
-    if latest["opencode-ai"] != current["opencode-ai"]:
-        VERSION_FILE.write_text(latest["opencode-ai"] + "\n")
+    if latest["@opencode/cli"] != current["@opencode/cli"]:
+        VERSION_FILE.write_text(latest["@opencode/cli"] + "\n")
 
     # Update Dockerfile ARG defaults
     content = re.sub(
         r"ARG OPENCODE_VERSION=\S+",
-        f"ARG OPENCODE_VERSION={latest['opencode-ai']}",
+        f"ARG OPENCODE_VERSION={latest['@opencode/cli']}",
         content,
     )
     content = re.sub(

@@ -35,7 +35,7 @@ jobs:
         if: steps.update.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
-          commit-message: "chore: bump opencode-ai and @openchamber/web to latest"
+          commit-message: "chore: bump @opencode/cli and @openchamber/web to latest"
           title: "chore: bump opencode package versions"
           branch: "auto/bump-opencode-versions"
           delete-branch: true

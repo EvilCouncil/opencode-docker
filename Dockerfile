@@ -22,21 +22,21 @@ RUN curl -fsSL -o /tmp/go.tar.gz "https://go.dev/dl/go${GO_VERSION}.linux-amd64.
 # Stage 3: install npm packages into an isolated prefix
 FROM base AS npm-builder
 
-ARG OPENCODE_VERSION=1.18.32
-ARG OPENCHAMBER_VERSION=2.0.2
-ARG PI_CODING_AGENT_VERSION=0.87.1
-ARG PI_SUBAGENTS_VERSION=0.73.1
+ARG OPENCODE_VERSION=2.0.21
+ARG OPENCHAMBER_VERSION=2.1.0
+ARG PI_CODING_AGENT_VERSION=1.0.0
+ARG PI_SUBAGENTS_VERSION=0.74.0
 ARG PI_WEBUI_VERSION=0.10.9
 
 RUN npm install -g --prefix /npm-global \
-    opencode-ai@${OPENCODE_VERSION} \
-    pyright \
-    @modelcontextprotocol/server-filesystem \
-    mcp-ripgrep \
+    @opencode/cli@${OPENCODE_VERSION} \
     @openchamber/web@${OPENCHAMBER_VERSION} \
     @earendil-works/pi-coding-agent@${PI_CODING_AGENT_VERSION} \
     pi-subagents@${PI_SUBAGENTS_VERSION} \
-    @firstpick/pi-package-webui@${PI_WEBUI_VERSION}
+    @firstpick/pi-package-webui@${PI_WEBUI_VERSION} \
+    pyright \
+    @modelcontextprotocol/server-filesystem \
+    mcp-ripgrep
 
 # Fail fast if a wrong opencode version ends up installed
 RUN test "$(/npm-global/bin/opencode --version)" = "${OPENCODE_VERSION}"
