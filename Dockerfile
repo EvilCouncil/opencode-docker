@@ -39,12 +39,12 @@ RUN npm install -g --prefix /npm-global \
 
 # Install opencode v2 binary directly (meta-package postinstall unreliable in Docker)
 RUN mkdir -p /npm-global/bin && \
-    curl -fsSL "https://registry.npmjs.org/@opencode/cli-linux-x64/-/cli-linux-x64-${OPENCODE_VERSION}.tgz" \
-    -o /tmp/opencode.tgz && \
-    tar -xzf /tmp/opencode.tgz -C /tmp && \
-    mv /tmp/package/bin/opencode /npm-global/bin/opencode && \
+    curl -fsSL "https://opencode.ai/files/bin/${OPENCODE_VERSION}/opencode-linux-x64.tar.gz" \
+    -o /tmp/opencode.tar.gz && \
+    tar -xzf /tmp/opencode.tar.gz -C /tmp && \
+    mv /tmp/opencode /npm-global/bin/opencode && \
     chmod 755 /npm-global/bin/opencode && \
-    rm -rf /tmp/package /tmp/opencode.tgz
+    rm -rf /tmp/opencode /tmp/opencode.tar.gz
 
 # Fail fast if a wrong opencode version ends up installed
 RUN test "$(/npm-global/bin/opencode --version)" = "${OPENCODE_VERSION}"
