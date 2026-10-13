@@ -58,7 +58,13 @@ ENV PATH="/usr/local/go/bin:/npm-global/bin:$PATH"
 RUN mkdir -p /home/opencode/.config/opencode \
              /home/opencode/.config/openchamber \
              /workspace && \
-    chown -R opencode:opencode /home/opencode /workspace
+    chown -R opencode:opencode /home/opencode /workspace && \
+    # Install Terraform
+    curl -fsSL -o /tmp/terraform.zip "https://releases.hashicorp.com/terraform/1.16.5/terraform_1.16.5_linux_amd64.zip" && \
+    unzip /tmp/terraform.zip -d /tmp && \
+    mv /tmp/terraform /usr/local/bin/terraform && \
+    chmod +x /usr/local/bin/terraform && \
+    rm -rf /tmp/terraform.zip
 
 USER opencode
 WORKDIR /workspace
