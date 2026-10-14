@@ -23,10 +23,10 @@ RUN curl -fsSL -o /tmp/go.tar.gz "https://go.dev/dl/go${GO_VERSION}.linux-amd64.
 FROM base AS npm-builder
 
 ARG OPENCODE_VERSION=2.0.28
-ARG OPENCHAMBER_VERSION=2.3.1
+ARG OPENCHAMBER_VERSION=2.3.2
 ARG PI_CODING_AGENT_VERSION=1.2.0
 ARG PI_SUBAGENTS_VERSION=0.78.0
-ARG PI_WEBUI_VERSION=0.11.0
+ARG PI_WEBUI_VERSION=0.11.1
 
 RUN npm install -g --prefix /npm-global \
     @openchamber/web@${OPENCHAMBER_VERSION} \
