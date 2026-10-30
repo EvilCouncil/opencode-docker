@@ -22,10 +22,10 @@ RUN curl -fsSL -o /tmp/go.tar.gz "https://go.dev/dl/go${GO_VERSION}.linux-amd64.
 # Stage 3: install npm packages into an isolated prefix
 FROM base AS npm-builder
 
-ARG OPENCODE_VERSION=2.1.3
-ARG OPENCHAMBER_VERSION=2.5.1
+ARG OPENCODE_VERSION=2.2.2
+ARG OPENCHAMBER_VERSION=2.5.3
 ARG PI_CODING_AGENT_VERSION=1.4.0
-ARG PI_SUBAGENTS_VERSION=0.81.0
+ARG PI_SUBAGENTS_VERSION=0.84.0
 ARG PI_WEBUI_VERSION=0.11.1
 
 RUN npm install -g --prefix /npm-global \
