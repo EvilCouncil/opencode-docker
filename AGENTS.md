@@ -1,6 +1,6 @@
 # Agent Instructions
 
-`opencode-docker` builds a Docker image bundling `opencode-ai` + `@openchamber/web` + `pi-coding-agent` into a coding agent container. Standalone project — publishes to `ghcr.io/evilcouncil/opencode-docker`, not part of the homelab monorepo.
+`opencode-docker` builds a Docker image bundling `opencode-ai` + `pi-coding-agent` into a coding agent container. Standalone project — publishes to `ghcr.io/evilcouncil/opencode-docker`, not part of the homelab monorepo.
 
 ## Key Files
 
@@ -54,6 +54,6 @@ git tag v1.18.25 && git push origin v1.18.25
 - **v2 uses `@opencode/cli`** (npm meta-package with postinstall) — not `opencode-ai`. The meta-package installs the correct native binary for the platform.
 - **MCP servers** (`@modelcontextprotocol/server-filesystem`, `mcp-ripgrep`) are installed as global npm packages in the `npm-builder` stage — add new ones there, not in the runtime stage.
 - **`gh` CLI** is pre-installed in the image (via apt in stage 1) — use it for git operations inside the container.
-- **`@openchamber/web`** is launched via the `openchamber` binary, not `opencode`. The CMD is `openchamber --lan --port 4096 --ui-password "${UI_PASSWORD:-password}" --no-daemon`.
-- **`UI_PASSWORD`** is the only runtime secret — never bake it into the image. Falls back to literal `"password"` if unset (security risk on `--lan`).
-- **Only `OPENCODE_VERSION` is passed as a build arg to CI** (`build.yml` reads it from Dockerfile via grep). Other ARGs (`OPENCHAMBER_VERSION`, `PI_CODING_AGENT_VERSION`, etc.) use their Dockerfile defaults at build time.
+- **`opencode --server --port 4096`** runs the opencode server in headless mode on port 4096 — use `--ui-password` to secure it.
+- **`UI_PASSWORD`** is the only runtime secret — never bake it into the image. Falls back to literal `"password"` if unset.
+- **Only `OPENCODE_VERSION` is passed as a build arg to CI** (`build.yml` reads it from Dockerfile via grep). Other ARGs (`PI_CODING_AGENT_VERSION`, `PI_SUBAGENTS_VERSION`, `PI_WEBUI_VERSION`) use their Dockerfile defaults at build time.

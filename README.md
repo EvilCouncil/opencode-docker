@@ -1,14 +1,13 @@
 # 🐳 opencode-docker
 
-A container image bundling [`opencode-ai`](https://www.npmjs.com/package/opencode-ai) and [`@openchamber/web`](https://www.npmjs.com/package/@openchamber/web) — a local AI coding agent with a web UI, ready to run anywhere Docker runs.
+A container image bundling [`opencode-ai`](https://www.npmjs.com/package/opencode-ai) — a local AI coding agent with a headless server, ready to run anywhere Docker runs.
 
 📦 **Image:** `ghcr.io/evilcouncil/opencode-docker`
 
 ## ✨ What's inside
 
-- 🟢 Node 20 (slim base)
-- 🤖 `opencode-ai` — the agent CLI
-- 🌐 `@openchamber/web` — web UI for opencode (served on port `4096`)
+- 🟢 Node 22 (slim base)
+- 🤖 `opencode-ai` — the agent CLI (server mode on port 4096)
 - 🔍 `pyright` — Python type checking for MCP/tooling support
 - 📁 `@modelcontextprotocol/server-filesystem` — filesystem MCP server
 - 🔎 `mcp-ripgrep` — ripgrep MCP server
@@ -27,7 +26,11 @@ docker run -d \
   ghcr.io/evilcouncil/opencode-docker:latest
 ```
 
-Then open **http://localhost:4096** 🎉
+Then connect via the opencode client:
+
+```bash
+opencode --server http://localhost:4096
+```
 
 ### 🔐 Setting the UI password
 
@@ -37,7 +40,7 @@ The `--ui-password` flag is populated from the `UI_PASSWORD` environment variabl
 -e UI_PASSWORD=your-secret-password
 ```
 
-> ⚠️ **Heads up:** if `UI_PASSWORD` isn't set, the container falls back to the literal string `password`. Always set it explicitly — especially since the server listens on all interfaces (`--lan`).
+> ⚠️ **Heads up:** if `UI_PASSWORD` isn't set, the container falls back to the literal string `password`. Always set it explicitly.
 
 ## 🐙 Using with Docker Compose
 
@@ -83,4 +86,4 @@ git push origin v1.1.0
 
 ## 📄 License
 
-See the upstream [`opencode-ai`](https://www.npmjs.com/package/opencode-ai) and [`@openchamber/web`](https://www.npmjs.com/package/@openchamber/web) packages for their respective licenses.
+See the upstream [`opencode-ai`](https://www.npmjs.com/package/opencode-ai) package for its license.

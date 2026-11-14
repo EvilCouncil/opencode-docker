@@ -1,5 +1,5 @@
 import json
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -9,14 +9,11 @@ DOCKERFILE_CONTENT = """\
 FROM base AS npm-builder
 
 ARG OPENCODE_VERSION=2.0.21
-ARG OPENCHAMBER_VERSION=2.1.0
 ARG PI_CODING_AGENT_VERSION=1.0.0
 ARG PI_SUBAGENTS_VERSION=0.74.0
 ARG PI_WEBUI_VERSION=0.10.9
 
 RUN npm install -g --prefix /npm-global \\
-    @opencode/cli@${OPENCODE_VERSION} \\
-    @openchamber/web@${OPENCHAMBER_VERSION} \\
     @earendil-works/pi-coding-agent@${PI_CODING_AGENT_VERSION} \\
     pi-subagents@${PI_SUBAGENTS_VERSION} \\
     @firstpick/pi-package-webui@${PI_WEBUI_VERSION}
@@ -49,11 +46,11 @@ class TestGetLatestVersion:
             return _urlopen_mock("1.13.0")
 
         with patch("urllib.request.urlopen", side_effect=fake_urlopen):
-            update_versions.get_latest_version("@openchamber/web")
+            update_versions.get_latest_version("@earendil-works/pi-coding-agent")
 
         assert len(captured) == 1
-        assert "@openchamber%2Fweb" in captured[0]
-        assert "@openchamber/web" not in captured[0]
+        assert "@earendil-works%2Fpi-coding-agent" in captured[0]
+        assert "@earendil-works/pi-coding-agent" not in captured[0]
 
     def test_uses_latest_dist_tag_endpoint(self):
         captured = []
@@ -85,8 +82,8 @@ def repo(tmp_path, monkeypatch):
     return {"dockerfile": dockerfile, "version_file": version_file}
 
 
-def mock_latest(monkeypatch, opencode="2.0.21", openchamber="2.1.0", pi="1.0.0", subagents="0.74.0", webui="0.10.9"):
-    versions = {"@opencode/cli": opencode, "@openchamber/web": openchamber, "@earendil-works/pi-coding-agent": pi, "pi-subagents": subagents, "@firstpick/pi-package-webui": webui}
+def mock_latest(monkeypatch, opencode="2.0.21", pi="1.0.0", subagents="0.74.0", webui="0.10.9"):
+    versions = {"@opencode/cli": opencode, "@earendil-works/pi-coding-agent": pi, "pi-subagents": subagents, "@firstpick/pi-package-webui": webui}
     monkeypatch.setattr(
         update_versions, "get_latest_version", lambda pkg: versions[pkg]
     )
@@ -130,39 +127,8 @@ class TestMainOpencodeUpdated:
         update_versions.main()
         assert "ARG OPENCODE_VERSION=2.1.0" in repo["dockerfile"].read_text()
 
-    def test_openchamber_arg_preserved(self, repo, monkeypatch):
-        mock_latest(monkeypatch, opencode="2.1.0")
-        update_versions.main()
-        assert "ARG OPENCHAMBER_VERSION=2.1.0" in repo["dockerfile"].read_text()
-
     def test_returns_zero(self, repo, monkeypatch):
         mock_latest(monkeypatch, opencode="2.1.0")
-        assert update_versions.main() == 0
-
-
-# ---------------------------------------------------------------------------
-# main() – @openchamber/web bumped
-# ---------------------------------------------------------------------------
-
-
-class TestMainOpenchamberUpdated:
-    def test_dockerfile_arg_updated(self, repo, monkeypatch):
-        mock_latest(monkeypatch, openchamber="2.2.0")
-        update_versions.main()
-        assert "ARG OPENCHAMBER_VERSION=2.2.0" in repo["dockerfile"].read_text()
-
-    def test_opencode_arg_preserved(self, repo, monkeypatch):
-        mock_latest(monkeypatch, openchamber="2.2.0")
-        update_versions.main()
-        assert "ARG OPENCODE_VERSION=2.0.21" in repo["dockerfile"].read_text()
-
-    def test_version_file_not_written(self, repo, monkeypatch):
-        mock_latest(monkeypatch, openchamber="2.2.0")
-        update_versions.main()
-        assert repo["version_file"].read_text() == "2.0.21\n"
-
-    def test_returns_zero(self, repo, monkeypatch):
-        mock_latest(monkeypatch, openchamber="2.2.0")
         assert update_versions.main() == 0
 
 
@@ -173,19 +139,17 @@ class TestMainOpenchamberUpdated:
 
 class TestMainBothUpdated:
     def test_version_file_updated(self, repo, monkeypatch):
-        mock_latest(monkeypatch, opencode="2.1.0", openchamber="2.2.0")
+        mock_latest(monkeypatch, opencode="2.1.0")
         update_versions.main()
         assert repo["version_file"].read_text() == "2.1.0\n"
 
-    def test_both_dockerfile_args_updated(self, repo, monkeypatch):
-        mock_latest(monkeypatch, opencode="2.1.0", openchamber="2.2.0")
+    def test_opencode_arg_updated(self, repo, monkeypatch):
+        mock_latest(monkeypatch, opencode="2.1.0")
         update_versions.main()
-        content = repo["dockerfile"].read_text()
-        assert "ARG OPENCODE_VERSION=2.1.0" in content
-        assert "ARG OPENCHAMBER_VERSION=2.2.0" in content
+        assert "ARG OPENCODE_VERSION=2.1.0" in repo["dockerfile"].read_text()
 
     def test_returns_zero(self, repo, monkeypatch):
-        mock_latest(monkeypatch, opencode="2.1.0", openchamber="2.2.0")
+        mock_latest(monkeypatch, opencode="2.1.0")
         assert update_versions.main() == 0
 
 

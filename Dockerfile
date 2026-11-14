@@ -23,19 +23,34 @@ RUN curl -fsSL -o /tmp/go.tar.gz "https://go.dev/dl/go${GO_VERSION}.linux-amd64.
 FROM base AS npm-builder
 
 ARG OPENCODE_VERSION=2.2.5
-ARG OPENCHAMBER_VERSION=2.5.3
 ARG PI_CODING_AGENT_VERSION=1.4.0
 ARG PI_SUBAGENTS_VERSION=0.84.0
 ARG PI_WEBUI_VERSION=0.11.1
 
 RUN npm install -g --prefix /npm-global \
-    @openchamber/web@${OPENCHAMBER_VERSION} \
     @earendil-works/pi-coding-agent@${PI_CODING_AGENT_VERSION} \
     pi-subagents@${PI_SUBAGENTS_VERSION} \
     @firstpick/pi-package-webui@${PI_WEBUI_VERSION} \
     pyright \
     @modelcontextprotocol/server-filesystem \
     mcp-ripgrep
+
+# Stage 4: runtime image
+FROM base
+
+COPY --from=npm-builder /npm-global /npm-global
+COPY --from=go-installer /usr/local/go /usr/local/go
+ENV PATH="/usr/local/go/bin:/npm-global/bin:$PATH"
+# UI_PASSWORD must be supplied at runtime via -e UI_PASSWORD=... or docker-compose environment:
+RUN mkdir -p /home/opencode/.config/opencode \
+              /workspace && \
+    chown -R opencode:opencode /home/opencode /workspace && \
+    # Install Terraform
+    curl -fsSL -o /tmp/terraform.zip "https://releases.hashicorp.com/terraform/1.16.5/terraform_1.16.5_linux_amd64.zip" && \
+    unzip /tmp/terraform.zip -d /tmp && \
+    mv /tmp/terraform /usr/local/bin/terraform && \
+    chmod +x /usr/local/bin/terraform && \
+    rm -rf /tmp/terraform.zip
 
 # Install opencode v2 binary directly (meta-package postinstall unreliable in Docker)
 RUN mkdir -p /npm-global/bin && \
@@ -48,27 +63,9 @@ RUN mkdir -p /npm-global/bin && \
     echo "opencode v${OPENCODE_VERSION} installed: $(/npm-global/bin/opencode --version)" && \
     test "$(/npm-global/bin/opencode --version)" = "opencode v${OPENCODE_VERSION}"
 
-# Stage 4: runtime image
-FROM base
-
-COPY --from=npm-builder /npm-global /npm-global
-COPY --from=go-installer /usr/local/go /usr/local/go
-ENV PATH="/usr/local/go/bin:/npm-global/bin:$PATH"
-# UI_PASSWORD must be supplied at runtime via -e UI_PASSWORD=... or docker-compose environment:
-RUN mkdir -p /home/opencode/.config/opencode \
-             /home/opencode/.config/openchamber \
-             /workspace && \
-    chown -R opencode:opencode /home/opencode /workspace && \
-    # Install Terraform
-    curl -fsSL -o /tmp/terraform.zip "https://releases.hashicorp.com/terraform/1.16.5/terraform_1.16.5_linux_amd64.zip" && \
-    unzip /tmp/terraform.zip -d /tmp && \
-    mv /tmp/terraform /usr/local/bin/terraform && \
-    chmod +x /usr/local/bin/terraform && \
-    rm -rf /tmp/terraform.zip
-
 USER opencode
 WORKDIR /workspace
 
 EXPOSE 4096
 
-CMD exec openchamber --lan --port 4096 --ui-password "${UI_PASSWORD:-password}" --no-daemon
+CMD exec opencode --server --port 4096 --ui-password "${UI_PASSWORD:-password}" --no-daemon
