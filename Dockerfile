@@ -22,9 +22,9 @@ RUN curl -fsSL -o /tmp/go.tar.gz "https://go.dev/dl/go${GO_VERSION}.linux-amd64.
 # Stage 3: install npm packages into an isolated prefix
 FROM base AS npm-builder
 
-ARG OPENCODE_VERSION=2.2.5
-ARG PI_CODING_AGENT_VERSION=1.4.0
-ARG PI_SUBAGENTS_VERSION=0.84.0
+ARG OPENCODE_VERSION=2.3.0
+ARG PI_CODING_AGENT_VERSION=1.5.2
+ARG PI_SUBAGENTS_VERSION=0.88.1
 ARG PI_WEBUI_VERSION=0.11.1
 
 RUN npm install -g --prefix /npm-global \
@@ -34,23 +34,6 @@ RUN npm install -g --prefix /npm-global \
     pyright \
     @modelcontextprotocol/server-filesystem \
     mcp-ripgrep
-
-# Stage 4: runtime image
-FROM base
-
-COPY --from=npm-builder /npm-global /npm-global
-COPY --from=go-installer /usr/local/go /usr/local/go
-ENV PATH="/usr/local/go/bin:/npm-global/bin:$PATH"
-# UI_PASSWORD must be supplied at runtime via -e UI_PASSWORD=... or docker-compose environment:
-RUN mkdir -p /home/opencode/.config/opencode \
-              /workspace && \
-    chown -R opencode:opencode /home/opencode /workspace && \
-    # Install Terraform
-    curl -fsSL -o /tmp/terraform.zip "https://releases.hashicorp.com/terraform/1.16.5/terraform_1.16.5_linux_amd64.zip" && \
-    unzip /tmp/terraform.zip -d /tmp && \
-    mv /tmp/terraform /usr/local/bin/terraform && \
-    chmod +x /usr/local/bin/terraform && \
-    rm -rf /tmp/terraform.zip
 
 # Install opencode v2 binary directly (meta-package postinstall unreliable in Docker)
 RUN mkdir -p /npm-global/bin && \
@@ -63,9 +46,34 @@ RUN mkdir -p /npm-global/bin && \
     echo "opencode v${OPENCODE_VERSION} installed: $(/npm-global/bin/opencode --version)" && \
     test "$(/npm-global/bin/opencode --version)" = "opencode v${OPENCODE_VERSION}"
 
+# Stage 4: runtime image
+FROM base
+
+ARG TERRAFORM_VERSION=1.16.5
+ARG TERRAFORM_SHA256=2bc2fcfff033265c9e02ca0351f01794eb122f62a9b2a49a3294b9e49eaab5e4
+
+COPY --from=npm-builder /npm-global /npm-global
+COPY --from=go-installer /usr/local/go /usr/local/go
+ENV PATH="/usr/local/go/bin:/npm-global/bin:$PATH"
+# OPENCODE_SERVER_PASSWORD (or OPENCODE_PASSWORD / legacy UI_PASSWORD) must be supplied at runtime:
+RUN mkdir -p /home/opencode/.config/opencode \
+              /home/opencode/.local/share/opencode \
+              /workspace && \
+    chown -R opencode:opencode /home/opencode /workspace && \
+    # Install Terraform
+    curl -fsSL -o /tmp/terraform.zip "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" && \
+    echo "${TERRAFORM_SHA256}  /tmp/terraform.zip" | sha256sum -c - && \
+    unzip /tmp/terraform.zip -d /tmp && \
+    mv /tmp/terraform /usr/local/bin/terraform && \
+    chmod +x /usr/local/bin/terraform && \
+    rm -rf /tmp/terraform.zip
+
 USER opencode
 WORKDIR /workspace
 
 EXPOSE 4096
 
-CMD exec opencode --server --port 4096 --ui-password "${UI_PASSWORD:-password}" --no-daemon
+CMD export OPENCODE_SERVER_USERNAME="${OPENCODE_SERVER_USERNAME:-opencode}" && \
+    export OPENCODE_SERVER_PASSWORD="${OPENCODE_SERVER_PASSWORD:-${OPENCODE_PASSWORD:-${UI_PASSWORD:-password}}}" && \
+    export OPENCODE_PASSWORD="${OPENCODE_SERVER_PASSWORD}" && \
+    exec opencode serve --hostname 0.0.0.0 --port 4096

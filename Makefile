@@ -20,7 +20,7 @@ run: ## 🚀 Run the image locally on :4096
 	docker run --rm -it \
 		--name $(IMAGE) \
 		-p $(PORT):$(PORT) \
-		-e UI_PASSWORD=$${UI_PASSWORD:-password} \
+		-e OPENCODE_SERVER_PASSWORD=$${OPENCODE_SERVER_PASSWORD:-$${OPENCODE_PASSWORD:-$${UI_PASSWORD:-password}}} \
 		-v $$(pwd)/workspace:/workspace \
 		$(IMAGE):$(TAG)
 

@@ -1,19 +1,19 @@
 # 🐳 opencode-docker
 
-A container image bundling [`opencode-ai`](https://www.npmjs.com/package/opencode-ai) — a local AI coding agent with a headless server, ready to run anywhere Docker runs.
+A container image bundling **OpenCode v2** (`opencode serve`) alongside `pi-coding-agent`, Go, Terraform, `gh`, and MCP servers — ready to act as a network-accessible AI coding server for laptop CLI/IDE attachments, **OpenChamber**, and **Hermes Agent** orchestration.
 
 📦 **Image:** `ghcr.io/evilcouncil/opencode-docker`
 
 ## ✨ What's inside
 
-- 🟢 Node 22 (slim base)
-- 🤖 `opencode-ai` — the agent CLI (server mode on port 4096)
-- 🔍 `pyright` — Python type checking for MCP/tooling support
-- 📁 `@modelcontextprotocol/server-filesystem` — filesystem MCP server
-- 🔎 `mcp-ripgrep` — ripgrep MCP server
-- 🛠️ Dev tools: `bash`, `git`, `ripgrep`, `curl`, `python3`
+- 🟢 Node 22 (`node:22-slim` base)
+- 🤖 `opencode` v2 standalone binary — runs `opencode serve --hostname 0.0.0.0 --port 4096`
+- 🥧 `@earendil-works/pi-coding-agent`, `pi-subagents`, `@firstpick/pi-package-webui`
+- 🔧 Go toolchain (`/usr/local/go`) & HashiCorp Terraform (`/usr/local/bin/terraform`)
+- 🔍 `pyright`, `@modelcontextprotocol/server-filesystem`, `mcp-ripgrep`
+- 🛠️ Dev tools: `bash`, `git`, `gh`, `ripgrep`, `curl`, `tmux`, `python3` (`pip`, `venv`)
 
-The image runs as a non-root `opencode` user and exposes a `/workspace` directory as the working directory.
+The image runs as a non-root `opencode` user (`1000:1000`) with `/workspace` as its working directory.
 
 ## 🚀 Quick start
 
@@ -21,69 +21,47 @@ The image runs as a non-root `opencode` user and exposes a `/workspace` director
 docker run -d \
   --name opencode \
   -p 4096:4096 \
-  -e UI_PASSWORD=your-secret-password \
+  -e OPENCODE_SERVER_PASSWORD=your-secret-password \
   -v $(pwd)/workspace:/workspace \
   ghcr.io/evilcouncil/opencode-docker:latest
 ```
 
-Then connect via the opencode client:
+### 💻 Connecting from your laptop
+
+Attach an interactive TUI session from your laptop:
 
 ```bash
-opencode --server http://localhost:4096
+opencode attach http://<host>:4096 \
+  --username opencode \
+  --password your-secret-password
 ```
 
-### 🔐 Setting the UI password
-
-The `--ui-password` flag is populated from the `UI_PASSWORD` environment variable at container start:
+Or run a one-shot headless prompt (also used by Hermes orchestration):
 
 ```bash
--e UI_PASSWORD=your-secret-password
+opencode run --attach http://<host>:4096 \
+  --username opencode \
+  --password your-secret-password \
+  "Summarize the repository architecture"
 ```
 
-> ⚠️ **Heads up:** if `UI_PASSWORD` isn't set, the container falls back to the literal string `password`. Always set it explicitly.
+### 🔐 Authentication & Healthcheck
 
-## 🐙 Using with Docker Compose
+`opencode serve` enforces HTTP Basic Authentication via `OPENCODE_SERVER_PASSWORD` (username `OPENCODE_SERVER_USERNAME`, default `opencode`). The container entrypoint also accepts `OPENCODE_PASSWORD` and legacy `UI_PASSWORD` as fallbacks.
 
-```yaml
-services:
-  opencode:
-    image: ghcr.io/evilcouncil/opencode-docker:latest
-    container_name: opencode
-    ports:
-      - "4096:4096"
-    environment:
-      - UI_PASSWORD=your-secret-password
-    volumes:
-      - ./workspace:/workspace
-    restart: unless-stopped
-```
+> ⚠️ **Heads up:** if none of `OPENCODE_SERVER_PASSWORD`, `OPENCODE_PASSWORD`, or `UI_PASSWORD` is set, the container falls back to the literal string `password`. Always set a strong password when exposing port `4096` on the network.
 
-## 🏷️ Image tags
-
-| Tag | Description |
-|-----|-------------|
-| `latest` | 🌟 Most recent stable release |
-| `vX.Y.Z` | 📌 Pinned release version (e.g. `v1.0.0`) |
-
-Pre-release tags (e.g. `v1.0.0-rc1`) are published under their own version tag but never update `latest`.
-
-## 🔧 Building locally
+Health endpoint (requires Basic Auth when password-protected):
 
 ```bash
-git clone https://github.com/EvilCouncil/opencode-docker.git
-cd opencode-docker
-docker build -t opencode-docker:local .
+curl -sf -u "opencode:your-secret-password" http://localhost:4096/global/health
 ```
 
-## 🤖 CI/CD
-
-Pushing a `v*` git tag triggers a [GitHub Actions workflow](.github/workflows/build.yml) that builds the image for `linux/amd64` and publishes it to GHCR:
+## 🔧 Building & releasing
 
 ```bash
-git tag v1.1.0
-git push origin v1.1.0
+make test             # Run unit tests for update_versions.py
+make update-versions  # Bump pinned versions from npm
+make build            # Build opencode-docker:local
+git tag v2.3.0 && git push origin v2.3.0
 ```
-
-## 📄 License
-
-See the upstream [`opencode-ai`](https://www.npmjs.com/package/opencode-ai) package for its license.
