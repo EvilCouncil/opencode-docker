@@ -23,9 +23,9 @@ RUN curl -fsSL -o /tmp/go.tar.gz "https://go.dev/dl/go${GO_VERSION}.linux-amd64.
 FROM base AS npm-builder
 
 ARG OPENCODE_VERSION=2.4.2
-ARG PI_CODING_AGENT_VERSION=1.5.2
-ARG PI_SUBAGENTS_VERSION=0.88.1
-ARG PI_WEBUI_VERSION=0.11.1
+ARG PI_CODING_AGENT_VERSION=1.6.1
+ARG PI_SUBAGENTS_VERSION=0.90.0
+ARG PI_WEBUI_VERSION=0.11.3
 
 RUN npm install -g --prefix /npm-global \
     @earendil-works/pi-coding-agent@${PI_CODING_AGENT_VERSION} \
